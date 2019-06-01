@@ -4,6 +4,9 @@ import numpy as np
 
 class ConvNN():
 
+    gauss_MEAN = 0
+    gauss_ST_DEVIATION = 1
+
     """
     WEIGHTS STRUCTURE EXAMPLE :
 
@@ -32,11 +35,87 @@ class ConvNN():
 
 
     def __init__(self):
+        self.weights = None
+        self.weights_grad = None
+        self.init_random_weights()
         pass
 
+    def init_random_weights(self):
+
+        ConvLayersWeights = []
+        FFLayersWeights = []
 
 
+        wConv1 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (3,3,1,8)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (8,1)),
+        }
 
+        wConv2 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (3,3,8,8)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (8,1)),
+        }
+
+        wFF1 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (90,392)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (90,1)),
+        }
+
+        wFF2 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (30,90)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (30,1)),
+        }
+
+        ConvLayersWeights.append(wConv1)
+        ConvLayersWeights.append(wConv2)
+        FFLayersWeights.append(wFF1)
+        FFLayersWeights.append(wFF2)
+
+        layer_weights = {
+            'conv': ConvLayersWeights,
+            'fullconnect': FFLayersWeights
+        }
+
+        self.weights = layer_weights
+
+
+    def training(self, train_set, epochs = 1, alfa = 0.01):
+
+        tr_set_size = train_set[0].shape[0]
+        batch_max_range = 100
+
+        for ep in range(epochs):
+            a, b = np.random.randint(0, batch_max_range, 2)
+
+            lB = min(a,b)
+            hB = max(a,b)
+
+            mn = np.random.randint(0, tr_set_size//batch_max_range)
+
+            lB *= mn
+            hB *= mn
+
+            img_batch = train_set[0][lB:hB,:,:,:]
+            label_batch = train_set[1][lB:hB,:,:]
+
+            Y, inValues = self.forwardPass(img_batch)
+            G = self.backwardPass(label_batch,Y, inValues)
+            W = self.weights
+            self.weights = self.update(alfa,W,G)
+
+    def validation(self, valid_set):
+
+        epochs = 10
+        positive = 0
+
+        for ep in range(epochs):
+
+            result, _ = self.forwardPass(valid_set[0][ep,:,:,:])
+
+            if(np.argmax(result) == np.argmax(valid_set[1][ep,:,:])):
+                positive += 1
+
+        return positive/epochs
 
 
     def forwardPass(self, X):
@@ -48,13 +127,10 @@ class ConvNN():
                         m - batch size
                         X.shape M x I x I x C
 
-            :return :   touple(y, Y, inValues) where:
-                        y - numbers of class with highest estimated probability {0,1,...,K}
-                            y.shape M x 1
-                        Y - estimated probability of all classes ( shape: K x 1 )
-                            Y.shape M x K x 1
-                        inValues: Dictionary with input values of conv/ff layers
-                            example: inValues['conv'][1] - Values encountered during feedForward on input of Conv layer with index 1
+            :return :   touple(Z, inValues)
+                        Z - estimated probability of every class
+                        Z.shape M x K x 1
+
 
         """
 
@@ -62,7 +138,10 @@ class ConvNN():
 
         inValues = {
             'conv': [],
-            'fullyconnect': []
+            'fullyconnect': [],
+            'mask' : [],
+            'flatten' : [],
+            'sigmoid' : []
         }
 
         inValues['conv'].append(X)
@@ -70,15 +149,18 @@ class ConvNN():
 
         Z = self.relu(z);z =Z
 
-        Z = self.max_pooling(z);z = Z
+        Z, mask = self.max_pooling(z);z = Z
+        inValues['mask'].append(mask)
 
         inValues['conv'].append(z)
         Z = self.convolution_layer(z, W['conv'][1]);z = Z
 
         Z = self.relu(z);z = Z
 
-        Z = self.max_pooling(z);z = Z
+        Z, mask = self.max_pooling(z);z = Z
+        inValues['mask'].append(mask)
 
+        inValues['flatten'].append(z)
         Z = self.flattening(z);z = Z
 
         inValues['fullyconnect'].append(z)
@@ -86,6 +168,7 @@ class ConvNN():
 
         #dropout here later
 
+        inValues['sigmoid'].append(z)
         Z = self.sigmoid(z); z = Z
 
         inValues['fullyconnect'].append(z)
@@ -93,24 +176,29 @@ class ConvNN():
 
         Z = self.softmax(z)
 
-        return self.classify(Z), Z
+        return Z, inValues
 
     def backwardPass(self, y, Y, inValues):
 
         """
 
         :param Y: estimated probability of all K classes
-                    ( y.shape = M x K x 1 )
+                    ( Y.shape = M x K x 1 )
         :param y: True labels for current
+                    M x K x 1
         :param inValues: Dictionary with input values of conv/ff layers
                          example: inValues['conv'][1] - Values encountered during feedForward on input of Conv layer with index 1
-        :return:  Avarage error over entire batch ???
+        :return:  Gradient of weights in respect to L
         """
 
 
 
         W = self.weights
-        G = self.weights_grad
+
+        G = {
+            'conv' : [None, None],
+            'fullyconnect' : [None, None]
+        }
 
 
         Z = self.softmax_backward(Y, y); z = Z
@@ -118,47 +206,50 @@ class ConvNN():
         Z, dW, dB = self.fullyConnected_layer_backward(z, W['fullyconnect'][1]);z = Z
         G['fullyconnect'][1]['W'], G['fullyconnect'][1]['B'] = dW, dB
 
-        Z = self.sigmoid(z,deriv = True); z = Z
+        Z = self.sigmoid_deriv(z, inValues['sigmoid'][0]); z = Z
 
         Z, dW, dB = self.fullyConnected_layer_backward(z, W['fullyconnect'][0],inValues['conv'][1]);z = Z;
         G['fullyconnect'][0]['W'], G['fullyconnect'][0]['B'] = dW, dB
 
-        Z = self.flattening_backward(z); z = Z
+        Z = self.flattening_backward(z, inValues['flatten'][0]); z = Z
 
-        Z = self.max_pooling_backward(z); z = Z
+        Z = self.max_pooling_backward(z,inValues['mask'][1]); z = Z
 
         Z = self.relu(z, deriv=True); z = Z
 
         Z, dW, dB = self.convolution_layer_backward(z, W['conv'][1],inValues['conv'][1]); z = Z
         G['conv'][1]['W'], G['conv'][1]['B'] = dW, dB
 
-        Z = self.max_pooling_backward(z);z = Z
+        Z = self.max_pooling_backward(z,inValues['mask'][0]);z = Z
 
         Z, dW, dB = self.relu(z, deriv=True);z = Z
 
         Z, dW, dB = self.convolution_layer_backward(z, W['conv'][0],inValues['conv'][1]); z = Z
         G['conv'][0]['W'], G['conv'][0]['B'] = dW, dB
 
-        pass
+        return G
 
-    def convolve2d(self,image, feature, border_mode="valid"):
-        image_dim = np.array(image.shape)
-        feature_dim = np.array(feature.shape)
-        target_dim = image_dim + feature_dim - 1
-        fft_result = np.fft.fft2(image, target_dim) * np.fft.fft2(feature, target_dim)
-        target = np.fft.ifft2(fft_result).real
 
-        if border_mode == "valid":
-            # To compute a valid shape, either np.all(x_shape >= y_shape) or
-            # np.all(y_shape >= x_shape).
-            valid_dim = image_dim - feature_dim + 1
-            if np.any(valid_dim < 1):
-                valid_dim = feature_dim - image_dim + 1
-            start_i = (target_dim - valid_dim) // 2
-            end_i = start_i + valid_dim
-            target = target[start_i[0]:end_i[0], start_i[1]:end_i[1]]
+    def update(self, alfa, W, G):
 
-        return target
+
+        W['fullyconnect'][0]['W'] += alfa * G['fullyconnect'][0]['W']
+        W['fullyconnect'][1]['W'] += alfa * G['fullyconnect'][1]['W']
+        W['fullyconnect'][0]['B'] += alfa * G['fullyconnect'][0]['B']
+        W['fullyconnect'][1]['B'] += alfa * G['fullyconnect'][1]['B']
+
+        W['conv'][0]['W'] += alfa * G['conv'][0]['W']
+        W['conv'][1]['W'] += alfa * G['conv'][1]['W']
+        W['conv'][0]['B'] += alfa * G['conv'][0]['B']
+        W['conv'][1]['B'] += alfa * G['conv'][1]['B']
+
+        return W
+
+
+
+
+
+
 
 
 
@@ -273,8 +364,6 @@ class ConvNN():
 
     def max_pooling(self,X):
 
-
-
         J = X.shape[1]
         newJ = J // 2
         flag = False # for special case when J is odd
@@ -304,6 +393,118 @@ class ConvNN():
             x = np.pad(x, ((0, 0),(0, 1), (0, 1), (0, 0)), 'constant', constant_values=0)
 
         return mask*x
+
+    def flattening(self,Z):
+        M, X, _, C = Z.shape
+        res = Z.reshape((M,X*X*C))
+        res = np.expand_dims(res, axis=-1)
+        return res
+
+    def flattening_backward(self, X, Z):
+        return X.reshape(Z.shape)
+
+
+    def fullyConnected_layer(self,X, W):
+        """
+
+        :param X: input for neural network
+                  X.shape M x J x 1
+        :param W: Dictionary of layer weights:
+                    W['W'] = Weights ( K x J)
+                    W['B'] = biases ( K x 1 )
+        :return:  Layer output
+                  shape M x K x 1
+        """
+
+        Bias = W['B']
+        W = W['W']
+
+        M = X.shape[0]
+        K = Bias.shape[0]
+
+        Z = np.zeros((M,K,1))
+
+        for m in range(X.shape[0]):
+            Z[m,:,:] = np.dot(W, X[m,:,:]) + Bias
+
+        return Z
+
+    def fullyConnected_layer_backward(self, dZ, W , X):
+        """
+        :param dZ:  gradient of previous layer
+                    dZ.shape M x K x 1
+        :param W:   Dictionary of layer weights:
+                    W['W'] = Weights ( K x J)
+                    W['B'] = biases ( K x 1 )
+        :param X:   Values encountered on input during feedForward
+                    X.shape M x J x 1
+        :return:    touple(dX, dW, dB)
+        """
+
+        W = W['W']
+        M, K, _ = dZ.shape
+        _, J, _ = X.shape
+
+        dW = np.zeros((M,K,J))
+        dX = np.zeros((M,J,1))
+
+        for m in range(M):
+            dW[m] = np.dot(dZ[m,:,:],X[m,:,:].T)
+            dX[m] = np.dot(W.T, dZ[m,:,:])
+
+        dB = dZ
+
+
+        return dX, dW, dB
+
+
+    def sigmoid(self, X):
+        sig = 1 / (1 + np.exp(-X))
+        return sig
+
+    def sigmoid_deriv(self, dZ, X):
+        """
+
+        :param dZ: previous layer derivative
+        :param X:  input Value
+        :return:  derivative for current layer sigmoid
+        """
+        sig = 1 / (1 + np.exp(-X))
+        return (sig * (1 - sig)) * dZ
+
+    def softmax(self, w):
+        res = np.exp(w)
+        divider = np.sum(res)
+        if divider == 0:
+            divider = 1
+        return res/divider
+
+    def softmax_backward(self, Y, y):
+        """
+
+        :param Y: estimated prob
+                    M x K x 1
+        :param y: label (one hot encoding )
+                    M x K x 1
+        :return:    derivative of softmax in current layer
+        """
+
+        return Y - y
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
