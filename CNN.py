@@ -172,7 +172,7 @@ class ConvNN():
 
     def validation(self, valid_set):
 
-        epochs = 1000
+        epochs = 2000
         positive = 0
 
         for ep in range(epochs):
@@ -217,25 +217,35 @@ class ConvNN():
             'conv': [],
             'fullyconnect': [],
             'mask' : [],
+            'pooling' : [],
             'flatten' : [],
-            'sigmoid' : []
+            'sigmoid' : [],
+            'relu' : []
         }
+
+        """
+            Current structure:
+            Conv -> Relu -> Conv -> Relu -> MaxPooling -> Conv -> Relu -> Conv -> Relu -> MaxPooling -> Flattening -> 
+            -> sigmoid -> Fully connected -> sigmoid ->Fully connected -> softmax
+        """
 
 
 
         inValues['conv'].append(X)
         Z = self.convolution_layer(X, W['conv'][0]);z = Z
 
-
+        inValues['relu'].append(z)
         Z = self.relu(z);z =Z
 
         inValues['conv'].append(z)
         Z = self.convolution_layer(z, W['conv'][1]);z = Z
 
 
+        inValues['relu'].append(z)
         Z = self.relu(z);z =Z
 
 
+        inValues['pooling'].append(z)
         Z, mask = self.max_pooling(z);z = Z
         inValues['mask'].append(mask)
 
@@ -244,15 +254,16 @@ class ConvNN():
         inValues['conv'].append(z)
         Z = self.convolution_layer(z, W['conv'][2]);z = Z
 
-
+        inValues['relu'].append(z)
         Z = self.relu(z);z = Z
 
         inValues['conv'].append(z)
         Z = self.convolution_layer(z, W['conv'][3]);z = Z
 
-
+        inValues['relu'].append(z)
         Z = self.relu(z);z = Z
 
+        inValues['pooling'].append(z)
         Z, mask = self.max_pooling(z);z = Z
         inValues['mask'].append(mask)
 
@@ -297,8 +308,7 @@ class ConvNN():
         :return:  Gradient of weights in respect to L
         """
 
-
-
+        np.set_printoptions(suppress=True)
         W = self.weights
 
         G = {
@@ -329,14 +339,17 @@ class ConvNN():
         }
         G['fullyconnect'].append(weight)
 
+
         Z = self.sigmoid_deriv(z, inValues['sigmoid'][0]);z=Z
 
 
         Z = self.flattening_backward(z, inValues['flatten'][0]); z = Z
 
+
         Z = self.max_pooling_backward(z,inValues['mask'][1]); z = Z
 
-        Z = self.relu(z, deriv=True); z = Z
+
+        Z = z * self.relu(inValues['relu'][3], deriv=True); z = Z
 
         Z, dW, dB = self.convolution_layer_backward(z, W['conv'][3],inValues['conv'][3]); z = Z
         weight = {
@@ -345,7 +358,8 @@ class ConvNN():
         }
         G['conv'].append(weight)
 
-        Z = self.relu(z, deriv=True); z = Z
+        Z = z * self.relu(inValues['relu'][2], deriv=True);z = Z
+
 
         Z, dW, dB = self.convolution_layer_backward(z, W['conv'][2],inValues['conv'][2]); z = Z
         weight = {
@@ -358,7 +372,7 @@ class ConvNN():
         Z = self.max_pooling_backward(z,inValues['mask'][0]);z = Z
 
 
-        Z = self.relu(z, deriv=True);z = Z
+        Z = z * self.relu(inValues['relu'][1], deriv=True);z = Z
 
         Z, dW, dB = self.convolution_layer_backward(z, W['conv'][1],inValues['conv'][1]); z = Z
         weight = {
@@ -367,7 +381,7 @@ class ConvNN():
         }
         G['conv'].append(weight)
 
-        Z = self.relu(z, deriv=True);z = Z
+        Z = z * self.relu(inValues['relu'][0], deriv=True);z = Z
 
         Z, dW, dB = self.convolution_layer_backward(z, W['conv'][0],inValues['conv'][0]); z = Z
         weight = {
@@ -379,11 +393,7 @@ class ConvNN():
         G['conv'].reverse()
         G['fullyconnect'].reverse()
 
-
-
-
         return G
-
 
     def update(self, alfa, W, G):
 
@@ -400,8 +410,6 @@ class ConvNN():
         W['conv'][1]['B'] -= alfa * np.sum(G['conv'][1]['B'],axis=0)
         W['conv'][2]['B'] -= alfa * np.sum(G['conv'][2]['B'],axis=0)
         W['conv'][3]['B'] -= alfa * np.sum(G['conv'][3]['B'],axis=0)
-
-
 
         return W
 
@@ -629,11 +637,10 @@ class ConvNN():
         return (sig * (1 - sig)) * dZ
 
     def softmax(self, w):
+        w -= np.mean(w,axis=0,keepdims=True)
         res = np.exp(w)
-        divider = np.sum(res)
-        if divider == 0:
-            divider = 1
-        return res/divider
+        divider = np.sum(res,axis=0,keepdims=True)
+        return (res/divider) + 1e-8
 
     def softmax_backward(self, Y, y):
         """

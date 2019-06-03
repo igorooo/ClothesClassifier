@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="02450624-44b5-4a2b-b5dd-0df3dc0a2cac" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CNN.py" beforeDir="false" afterPath="$PROJECT_DIR$/CNN.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
     </list>
@@ -17,38 +18,38 @@
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/ClothesClassifier$test1.coverage" NAME="test1 Coverage Results" MODIFIED="1559428827951" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ClothesClassifier$CNN.coverage" NAME="CNN Coverage Results" MODIFIED="1559429562219" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ClothesClassifier$test.coverage" NAME="test Coverage Results" MODIFIED="1559560401518" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ClothesClassifier$Training.coverage" NAME="Training Coverage Results" MODIFIED="1559560666196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ClothesClassifier$test.coverage" NAME="test Coverage Results" MODIFIED="1559589587136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ClothesClassifier$Training.coverage" NAME="Training Coverage Results" MODIFIED="1559592044232" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FUSProjectUsageTrigger">
     <session id="-363068031">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="4" />
-          <entry key="project.open.time.0" value="3" />
+          <entry key="project.closed" value="6" />
+          <entry key="project.open.time.0" value="4" />
           <entry key="project.open.time.27" value="1" />
           <entry key="project.open.time.4" value="1" />
-          <entry key="project.opened" value="5" />
+          <entry key="project.opened" value="6" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="py" value="5" />
+          <entry key="py" value="7" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="5" />
+          <entry key="Python" value="7" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="11945" />
+          <entry key="py" value="13188" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="11945" />
+          <entry key="Python" value="13188" />
         </counts>
       </usages-collector>
     </session>
@@ -58,14 +59,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/CNN.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1483">
-              <caret line="368" column="38" lean-forward="true" selection-start-line="368" selection-start-column="38" selection-end-line="368" selection-end-column="38" />
+            <state relative-caret-position="-92">
+              <caret line="397" column="33" lean-forward="true" selection-start-line="397" selection-start-column="33" selection-end-line="397" selection-end-column="33" />
               <folding>
-                <marker date="1559561241806" expanded="true" signature="1492:1499" ph="..." />
-                <marker date="1559561241806" expanded="true" signature="3676:4332" ph="..." />
-                <marker date="1559561241806" expanded="true" signature="8822:8829" ph="..." />
-                <marker date="1559561241806" expanded="true" signature="8823:8829" ph="..." />
-                <marker date="1559561241806" expanded="true" signature="15207:15459" ph="..." />
+                <marker date="1559593323936" expanded="true" signature="1492:1499" ph="..." />
+                <marker date="1559593323936" expanded="true" signature="4185:4844" ph="..." />
+                <marker date="1559593323936" expanded="true" signature="10954:10961" ph="..." />
+                <marker date="1559593323936" expanded="true" signature="10955:10961" ph="..." />
+                <marker date="1559593323936" expanded="true" signature="17365:17617" ph="..." />
               </folding>
             </state>
           </provider>
@@ -74,8 +75,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Training.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="495">
-              <caret line="42" column="33" lean-forward="true" selection-start-line="42" selection-start-column="33" selection-end-line="42" selection-end-column="33" />
+            <state relative-caret-position="525">
+              <caret line="53" column="10" lean-forward="true" selection-start-line="53" selection-start-column="10" selection-end-line="53" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -83,8 +84,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="420">
-              <caret line="73" selection-start-line="73" selection-end-line="73" selection-end-column="34" />
+            <state relative-caret-position="403">
+              <caret line="57" column="43" selection-start-line="57" selection-start-column="43" selection-end-line="57" selection-end-column="43" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -95,8 +96,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="107" selection-start-line="107" selection-end-line="110" selection-end-column="1" />
+            <state relative-caret-position="840">
+              <caret line="104" lean-forward="true" selection-start-line="104" selection-end-line="104" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -144,7 +145,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -156,6 +156,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -306,12 +307,12 @@
     <frame x="-1" y="49" width="1922" height="996" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2603834" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.2630458" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.30689654" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.30689654" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -338,8 +339,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="107" selection-start-line="107" selection-end-line="110" selection-end-column="1" />
+        <state relative-caret-position="840">
+          <caret line="104" lean-forward="true" selection-start-line="104" selection-end-line="104" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -348,8 +349,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="73" selection-start-line="73" selection-end-line="73" selection-end-column="34" />
+        <state relative-caret-position="403">
+          <caret line="57" column="43" selection-start-line="57" selection-start-column="43" selection-end-line="57" selection-end-column="43" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -358,21 +359,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Training.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="495">
-          <caret line="42" column="33" lean-forward="true" selection-start-line="42" selection-start-column="33" selection-end-line="42" selection-end-column="33" />
+        <state relative-caret-position="525">
+          <caret line="53" column="10" lean-forward="true" selection-start-line="53" selection-start-column="10" selection-end-line="53" selection-end-column="10" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CNN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1483">
-          <caret line="368" column="38" lean-forward="true" selection-start-line="368" selection-start-column="38" selection-end-line="368" selection-end-column="38" />
+        <state relative-caret-position="-92">
+          <caret line="397" column="33" lean-forward="true" selection-start-line="397" selection-start-column="33" selection-end-line="397" selection-end-column="33" />
           <folding>
-            <marker date="1559561241806" expanded="true" signature="1492:1499" ph="..." />
-            <marker date="1559561241806" expanded="true" signature="3676:4332" ph="..." />
-            <marker date="1559561241806" expanded="true" signature="8822:8829" ph="..." />
-            <marker date="1559561241806" expanded="true" signature="8823:8829" ph="..." />
-            <marker date="1559561241806" expanded="true" signature="15207:15459" ph="..." />
+            <marker date="1559593323936" expanded="true" signature="1492:1499" ph="..." />
+            <marker date="1559593323936" expanded="true" signature="4185:4844" ph="..." />
+            <marker date="1559593323936" expanded="true" signature="10954:10961" ph="..." />
+            <marker date="1559593323936" expanded="true" signature="10955:10961" ph="..." />
+            <marker date="1559593323936" expanded="true" signature="17365:17617" ph="..." />
           </folding>
         </state>
       </provider>
