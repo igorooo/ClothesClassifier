@@ -41,11 +41,42 @@ WE = {
 
 cnn = CNN.ConvNN()
 
-print(cnn.sigmoid(8.04)*2)
+#print(cnn.sigmoid(cnn.sigmoid(5)*8+1)*4+1)
 
 
 res = cnn.forwardPass(np.ones((1,16,16,1)))
-print(res[0])
+label = np.zeros((2,1))
+label[0,0] = 1
+
+
+res2 = cnn.backwardPass(label, res[0], res[1])
+
+#print(res[0])
+
+W = np.ones((2,4))
+dZ = np.array([-0.5,0.5]).reshape((2,1))
+
+#print(W.T@dZ)
+
+Wconv = np.zeros((3, 3, 1, 2))
+Wconv[1, 1, :, :] = 1
+
+wConv1 = {
+    'W': Wconv,
+    'B': np.ones((2, 1)),
+}
+
+
+In = np.ones((1,16,16,1))
+dZ = np.ones((1,14,14,2))
+
+bRes = cnn.convolution_layer_backward(dZ,wConv1,In)
+np.set_printoptions(suppress=True)
+print(bRes[0].shape)
+print(bRes[0][0,:,:,0])
+
+
+
 
 
 

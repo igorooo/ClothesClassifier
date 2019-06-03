@@ -37,7 +37,8 @@ class ConvNN():
     def __init__(self):
         self.weights = None
         self.weights_grad = None
-        self.init_test_weights()
+        #self.init_test_weights()
+        self.init_random_weights()
         pass
 
     def init_test_weights(self):
@@ -47,6 +48,7 @@ class ConvNN():
 
         Wconv = np.zeros((3,3,1,2))
         Wconv[1, 1, :, :] = 1
+
 
 
         wConv1 = {
@@ -101,18 +103,30 @@ class ConvNN():
             'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (8,1)),
         }
 
+        wConv3 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (3,3,8,8)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (8,1)),
+        }
+
+        wConv4 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (3,3,8,8)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (8,1)),
+        }
+
         wFF1 = {
-            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (90,392)),
-            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (90,1)),
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (100,288)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (100,1)),
         }
 
         wFF2 = {
-            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (10,90)),
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (10,100)),
             'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (10,1)),
         }
 
         ConvLayersWeights.append(wConv1)
         ConvLayersWeights.append(wConv2)
+        ConvLayersWeights.append(wConv3)
+        ConvLayersWeights.append(wConv4)
         FFLayersWeights.append(wFF1)
         FFLayersWeights.append(wFF2)
 
@@ -124,7 +138,7 @@ class ConvNN():
         self.weights = layer_weights
 
 
-    def training(self, train_set, epochs = 1000, alfa = 0.1):
+    def training(self, train_set, epochs = 20000, alfa = 0.01):
 
         tr_set_size = train_set[0].shape[0]
         batch_max_range = 10
@@ -158,7 +172,7 @@ class ConvNN():
 
     def validation(self, valid_set):
 
-        epochs = 200
+        epochs = 1000
         positive = 0
 
         for ep in range(epochs):
@@ -207,50 +221,67 @@ class ConvNN():
             'sigmoid' : []
         }
 
-        print(X.shape)
+
 
         inValues['conv'].append(X)
         Z = self.convolution_layer(X, W['conv'][0]);z = Z
 
-        print(Z.shape)
+
         Z = self.relu(z);z =Z
+
+        inValues['conv'].append(z)
+        Z = self.convolution_layer(z, W['conv'][1]);z = Z
+
+
+        Z = self.relu(z);z =Z
+
 
         Z, mask = self.max_pooling(z);z = Z
         inValues['mask'].append(mask)
 
-        print(Z.shape)
-        inValues['conv'].append(z)
-        Z = self.convolution_layer(z, W['conv'][1]);z = Z
 
-        print(Z.shape)
+
+        inValues['conv'].append(z)
+        Z = self.convolution_layer(z, W['conv'][2]);z = Z
+
+
+        Z = self.relu(z);z = Z
+
+        inValues['conv'].append(z)
+        Z = self.convolution_layer(z, W['conv'][3]);z = Z
+
+
         Z = self.relu(z);z = Z
 
         Z, mask = self.max_pooling(z);z = Z
         inValues['mask'].append(mask)
 
-        print(Z.shape)
+
         inValues['flatten'].append(z)
         Z = self.flattening(z);z = Z
-        print(Z.shape)
+
+
         inValues['sigmoid'].append(z)
         Z = self.sigmoid(z); z = Z
-        print(Z.shape)
+
+
         inValues['fullyconnect'].append(z)
         Z = self.fullyConnected_layer(z, W['fullyconnect'][0]); z = Z
 
-        print(Z.shape)
 
         #dropout here later
 
         inValues['sigmoid'].append(z)
         Z = self.sigmoid(z); z = Z
-        print(Z.shape)
+
+
         inValues['fullyconnect'].append(z)
         Z = self.fullyConnected_layer(z, W['fullyconnect'][1]);z = Z
 
-        print(Z.shape)
+
         Z = self.softmax(z)
-        print(Z.shape)
+
+
         return Z, inValues
 
     def backwardPass(self, y, Y, inValues):
@@ -278,12 +309,15 @@ class ConvNN():
 
         Z = self.softmax_backward(Y, y); z = Z
 
+
+
         Z, dW, dB = self.fullyConnected_layer_backward(z, W['fullyconnect'][1],inValues['fullyconnect'][1]);z = Z
         weight = {
             'W': dW,
             'B': dB
         }
         G['fullyconnect'].append(weight)
+
 
 
         Z = self.sigmoid_deriv(z, inValues['sigmoid'][1]); z = Z
@@ -304,14 +338,34 @@ class ConvNN():
 
         Z = self.relu(z, deriv=True); z = Z
 
-        Z, dW, dB = self.convolution_layer_backward(z, W['conv'][1],inValues['conv'][1]); z = Z
+        Z, dW, dB = self.convolution_layer_backward(z, W['conv'][3],inValues['conv'][3]); z = Z
         weight = {
             'W': dW,
             'B': dB
         }
         G['conv'].append(weight)
 
+        Z = self.relu(z, deriv=True); z = Z
+
+        Z, dW, dB = self.convolution_layer_backward(z, W['conv'][2],inValues['conv'][2]); z = Z
+        weight = {
+            'W': dW,
+            'B': dB
+        }
+        G['conv'].append(weight)
+
+
         Z = self.max_pooling_backward(z,inValues['mask'][0]);z = Z
+
+
+        Z = self.relu(z, deriv=True);z = Z
+
+        Z, dW, dB = self.convolution_layer_backward(z, W['conv'][1],inValues['conv'][1]); z = Z
+        weight = {
+            'W': dW,
+            'B': dB
+        }
+        G['conv'].append(weight)
 
         Z = self.relu(z, deriv=True);z = Z
 
@@ -340,8 +394,14 @@ class ConvNN():
 
         W['conv'][0]['W'] -= alfa * np.sum(G['conv'][0]['W'],axis=0)
         W['conv'][1]['W'] -= alfa * np.sum(G['conv'][1]['W'],axis=0)
+        W['conv'][2]['W'] -= alfa * np.sum(G['conv'][2]['W'],axis=0)
+        W['conv'][3]['W'] -= alfa * np.sum(G['conv'][3]['W'],axis=0)
         W['conv'][0]['B'] -= alfa * np.sum(G['conv'][0]['B'],axis=0)
         W['conv'][1]['B'] -= alfa * np.sum(G['conv'][1]['B'],axis=0)
+        W['conv'][2]['B'] -= alfa * np.sum(G['conv'][2]['B'],axis=0)
+        W['conv'][3]['B'] -= alfa * np.sum(G['conv'][3]['B'],axis=0)
+
+
 
         return W
 
