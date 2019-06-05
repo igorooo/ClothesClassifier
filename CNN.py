@@ -1,3 +1,4 @@
+
 import numpy as np
 
 
@@ -5,7 +6,7 @@ import numpy as np
 class ConvNN():
 
     gauss_MEAN = 0
-    gauss_ST_DEVIATION = 1
+    gauss_ST_DEVIATION = 0.01
 
     """
     WEIGHTS STRUCTURE EXAMPLE :
@@ -37,8 +38,10 @@ class ConvNN():
     def __init__(self):
         self.weights = None
         self.weights_grad = None
+        self.NNweights = None
         #self.init_test_weights()
         self.init_random_weights()
+        self.init_NN_weights()
         pass
 
     def init_test_weights(self):
@@ -85,6 +88,31 @@ class ConvNN():
         }
 
         self.weights = layer_weights
+
+    def init_NN_weights(self):
+
+        FFLayersWeights = []
+
+        wFF1 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (1296,1296)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (1296,1)),
+        }
+
+        wFF2 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (100,1296)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (100,1)),
+        }
+
+        wFF3 = {
+            'W': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (10,100)),
+            'B': np.random.normal(ConvNN.gauss_MEAN, ConvNN.gauss_ST_DEVIATION, (10,1)),
+        }
+
+        FFLayersWeights.append(wFF1)
+        FFLayersWeights.append(wFF2)
+        FFLayersWeights.append(wFF3)
+
+        self.NNweights = FFLayersWeights
 
 
     def init_random_weights(self):
@@ -138,14 +166,14 @@ class ConvNN():
         self.weights = layer_weights
 
 
-    def training(self, train_set, epochs = 20000, alfa = 0.01):
+    def training(self, train_set, epochs = 2000, alfa = 0.01):
 
         tr_set_size = train_set[0].shape[0]
         batch_max_range = 10
 
         for ep in range(epochs):
 
-            """ 
+            """
             a, b = np.random.randint(0, batch_max_range, 2)
 
             lB = min(a,b)
@@ -172,7 +200,7 @@ class ConvNN():
 
     def validation(self, valid_set):
 
-        epochs = 2000
+        epochs = 1000
         positive = 0
 
         for ep in range(epochs):
@@ -193,6 +221,142 @@ class ConvNN():
                 positive += 1
 
         return positive/epochs
+
+    def trainingNN(self, train_set, epochs = 10000, alfa = 0.001):
+
+        tr_set_size = train_set[0].shape[0]
+        batch_max_range = 10
+
+        for ep in range(epochs):
+
+            """
+            a, b = np.random.randint(0, batch_max_range, 2)
+
+            lB = min(a,b)
+            hB = max(a,b)
+
+            if lB == hB: hB += 2
+
+            mn = np.random.randint(0, tr_set_size//batch_max_range)
+
+            lB *= mn
+            hB *= mn
+
+            img_batch = train_set[0][lB:hB,:,:,:]
+            label_batch = train_set[1][lB:hB,:,:]
+            """
+
+            img_batch = np.expand_dims(train_set[0][ep,:,:,:],axis=0)
+            label_batch = np.expand_dims(train_set[1][ep,:,:],axis=0)
+
+            Y, inValues = self.forwardPassNN(img_batch)
+            G = self.backwardPassNN(label_batch,Y, inValues)
+            W = self.NNweights
+            self.NNweights = self.updateNN(alfa,W,G)
+
+    def validationNN(self, valid_set):
+
+        epochs = 1000
+        positive = 0
+
+        for ep in range(epochs):
+
+            result, _ = self.forwardPassNN(np.expand_dims(valid_set[0][ep,:,:,:],axis=0))
+
+            """
+            print(result.shape,end='resShape\n')
+            print(result, end=' res\n')
+            print(valid_set[1][ep,:,:].shape, end='validShape\n')
+            print(valid_set[1][ep,:,:], end=' validShape\n')
+
+            print(np.argmax(result),end='\n\n')
+            print(np.argmax(valid_set[1][ep,:,:]))
+            """
+
+            if(np.argmax(result[0]) == np.argmax(valid_set[1][ep,:,:])):
+                positive += 1
+
+        return positive/epochs
+
+    def forwardPassNN(self, X):
+
+        W = self.NNweights
+
+        inValues = {
+            'fullconnect': [],
+            'relu' : []
+        }
+
+
+        X = np.expand_dims(X.flatten(),axis=0)
+        X = np.expand_dims(X,axis=-1)
+
+
+        inValues['fullconnect'].append(X)
+        Z = self.fullyConnected_layer(X,W[0]); z = Z
+
+        inValues['relu'].append(z)
+        Z = self.relu(z); z = Z
+
+        inValues['fullconnect'].append(z)
+        Z = self.fullyConnected_layer(z,W[1]); z = Z
+
+        inValues['relu'].append(z)
+        Z = self.relu(z); z = Z
+
+        inValues['fullconnect'].append(z)
+        Z = self.fullyConnected_layer(z, W[2]); z = Z
+
+        Z = self.softmax(z)
+
+
+        return Z, inValues
+
+    def backwardPassNN(self, y, Y, inValues):
+
+        W = self.NNweights
+        G = []
+
+        Z = self.softmax_backward(Y,y); z = Z
+
+        Z, dW, dB = self.fullyConnected_layer_backward(z, W[2],inValues['fullconnect'][2]);z = Z
+        weight = {
+            'W': dW,
+            'B': dB
+        }
+        G.append(weight)
+
+        Z = z * self.relu(inValues['relu'][1], deriv=True); z = Z
+
+        Z, dW, dB = self.fullyConnected_layer_backward(z, W[1],inValues['fullconnect'][1]);z = Z
+        weight = {
+            'W': dW,
+            'B': dB
+        }
+        G.append(weight)
+
+        Z = z * self.relu(inValues['relu'][0], deriv=True); z = Z
+
+        Z, dW, dB = self.fullyConnected_layer_backward(z, W[0],inValues['fullconnect'][0]);z = Z
+        weight = {
+            'W': dW,
+            'B': dB
+        }
+        G.append(weight)
+
+        G.reverse()
+
+        return G
+
+    def updateNN(self, alfa, W, G):
+
+        W[0]['W'] -= alfa * np.sum(G[0]['W'],axis=0)
+        W[1]['W'] -= alfa * np.sum(G[1]['W'],axis=0)
+        W[0]['B'] -= alfa * np.sum(G[0]['B'],axis=0)
+        W[1]['B'] -= alfa * np.sum(G[1]['B'],axis=0)
+
+        return W
+
 
 
     def forwardPass(self, X):
@@ -225,7 +389,7 @@ class ConvNN():
 
         """
             Current structure:
-            Conv -> Relu -> Conv -> Relu -> MaxPooling -> Conv -> Relu -> Conv -> Relu -> MaxPooling -> Flattening -> 
+            Conv -> Relu -> Conv -> Relu -> MaxPooling -> Conv -> Relu -> Conv -> Relu -> MaxPooling -> Flattening ->
             -> sigmoid -> Fully connected -> sigmoid ->Fully connected -> softmax
         """
 
@@ -272,18 +436,14 @@ class ConvNN():
         Z = self.flattening(z);z = Z
 
 
-        inValues['sigmoid'].append(z)
-        Z = self.sigmoid(z); z = Z
-
-
         inValues['fullyconnect'].append(z)
         Z = self.fullyConnected_layer(z, W['fullyconnect'][0]); z = Z
 
 
         #dropout here later
 
-        inValues['sigmoid'].append(z)
-        Z = self.sigmoid(z); z = Z
+        inValues['relu'].append(z)
+        Z = self.relu(z);z = Z
 
 
         inValues['fullyconnect'].append(z)
@@ -329,8 +489,7 @@ class ConvNN():
         G['fullyconnect'].append(weight)
 
 
-
-        Z = self.sigmoid_deriv(z, inValues['sigmoid'][1]); z = Z
+        Z = z * self.relu(inValues['relu'][4], deriv=True); z = Z
 
         Z, dW, dB = self.fullyConnected_layer_backward(z, W['fullyconnect'][0],inValues['fullyconnect'][0]);z = Z;
         weight = {
@@ -339,8 +498,6 @@ class ConvNN():
         }
         G['fullyconnect'].append(weight)
 
-
-        Z = self.sigmoid_deriv(z, inValues['sigmoid'][0]);z=Z
 
 
         Z = self.flattening_backward(z, inValues['flatten'][0]); z = Z
@@ -676,14 +833,3 @@ class ConvNN():
             target = target[start_i[0]:end_i[0], start_i[1]:end_i[1]]
 
         return target
-
-
-
-
-
-
-
-
-
-
-

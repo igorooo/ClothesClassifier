@@ -47,25 +47,8 @@ tr,vl = extractData()
 
 cnn = CNN.ConvNN()
 
-cnn.training(tr)
+cnn.trainingNN(tr)
 
-res = cnn.validation(vl)
+res = cnn.validationNN(vl)
 
 print(res)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
